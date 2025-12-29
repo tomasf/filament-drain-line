@@ -2,10 +2,7 @@ import Foundation
 import Cadova
 import Helical
 
-let packageURL = URL(filePath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
-let outputRoot = packageURL.appending(path: "Models", directoryHint: .isDirectory)
-
-await Project(root: outputRoot) {
+await Project(packageRelative: "Models") {
     Metadata(
         title: "Filament Drain Line",
         description: "A through-surface filament waste solution using standard vacuum hose for Bambu Lab H2 series printers.",
@@ -16,6 +13,6 @@ await Project(root: outputRoot) {
     Environment(\.tolerance, 0.2)
 
     await Model("Mounting Bracket") { MountingBracket() }
-    await Model("Connector") { HoseConnector() }
+    await Model("Connector") { HoseConnector().removingParts(ofType: .context) }
     await Model("Grommet") { Grommet() }
 }

@@ -38,6 +38,10 @@ struct HoseConnector: Shape3D {
             .cuttingEdgeProfile(.fillet(radius: bodyRoundingRadius), on: .bottom)
             .aligned(at: .centerX, .maxY)
 
+        let latchTabThickness = 2.0
+        let latchTabFlexDepth = 2.0
+        let latchTabZOffset = 1.0
+
         Screw(thread: thread, length: hoseMountLength)
             .cuttingEdgeProfile(.chamfer(depth: thread.depth), on: .bottom) {
                 Circle(diameter: thread.majorDiameter - tolerance)
@@ -111,13 +115,66 @@ struct HoseConnector: Shape3D {
                 }
             }
             .subtracting {
+                Box(x: bodyWidth, y: latchTabFlexDepth, z: PurgeChuteMetrics.chuteSize.y)
+                    .cuttingEdgeProfile(.fillet(radius: latchTabFlexDepth / 2), on: .bottom, along: .x)
+                    .aligned(at: .centerX)
+                    .translated(y: -latchTabThickness - latchTabFlexDepth, z: chuteTopZ + latchTabZOffset)
+            }
+            .adding {
+                let latchWingLength = 8.0
+                let latchWingAngle = 30°
+
+                Box(x: MountingBracket.margins.x, y: latchTabThickness, z: topZ - chuteTopZ)
+                    .adding {
+                        Box(
+                            x: MountingBracket.margins.x,
+                            y: latchTabThickness,
+                            z: latchWingLength
+                        )
+                        .cuttingEdgeProfile(
+                            .fillet(radius: MountingBracket.margins.x / 2),
+                            on: .top,
+                            along: .y
+                        )
+                        .aligned(at: .maxY)
+                        .rotated(x: latchWingAngle)
+                        .translated(y: latchTabThickness, z: topZ - chuteTopZ)
+                    }
+                    .aligned(at: .maxY)
+                    .translated(x: PurgeChuteMetrics.chuteSize.x / 2, z: chuteTopZ)
+                    .symmetry(over: .x)
+            }
+            .subtracting {
                 MountingBracket.Tab()
-                    .offset(amount: 0.15, style: .round)
+                    .offset(amount: tolerance, style: .round)
                     .rotated(180°)
                     .extruded(height: PurgeChuteMetrics.chuteSize.y + hoseToChuteTransitionLength + 0.4)
                     .translated(z: -hoseToChuteTransitionLength)
                     .translated(x: -PurgeChuteMetrics.chuteSize.x / 2 - 10 / 2, z: chuteBottomZ)
                     .symmetry(over: .x)
+            }
+            .sliced(along: .y(-1)) { body, shape in
+                body.adding {
+                    Triangle.right(a: MountingBracket.latch.length, b: MountingBracket.latch.depth)
+                        .extruded(height: bodyWidth)
+                        .rotated(y: 90°)
+                        .aligned(at: .centerX)
+                        .translated(z: topZ - MountingBracket.latch.inset)
+                        .intersecting {
+                            shape
+                                .offset(amount: -0.001, style: .miter)
+                                .extruded(height: bodyDepth)
+                                .aligned(at: .centerZ)
+                                .rotated(x: -90°)
+                        }
+                }
+            }
+            .adding {
+                MountingBracket()
+                    .rotated(x: 90°)
+                    .aligned(at: .bottom)
+                    .translated(y: 3.6, z: chuteBottomZ - MountingBracket.margins.y)
+                    .inBackground()
             }
     }
 }
