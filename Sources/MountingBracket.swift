@@ -8,12 +8,13 @@ struct MountingBracket: Shape3D {
         length: 7.0,
         inset: 5.0,
     )
+    static let mountBaseThickness = 1.0
+    static var mountThickness: Double {
+        mountBaseThickness + PurgeChuteMetrics.screwHeadThickness + 1
+    }
 
     var body: any Geometry3D {
         @Environment(\.tolerance) var tolerance
-
-        let mountBaseThickness = 1.0
-        let mountThickness = mountBaseThickness + PurgeChuteMetrics.screwHeadThickness + 1
 
         Rectangle(PurgeChuteMetrics.chuteSize + Self.margins * 2)
             .cuttingEdgeProfile(.fillet(radius: 5))
@@ -26,7 +27,7 @@ struct MountingBracket: Shape3D {
                 Rectangle(PurgeChuteMetrics.chuteSize)
                     .aligned(at: .center)
             }
-            .extruded(height: mountThickness)
+            .extruded(height: Self.mountThickness)
             .adding {
                 Tab()
                     .extruded(height: PurgeChuteMetrics.chuteSize.y)
@@ -34,13 +35,20 @@ struct MountingBracket: Shape3D {
                     .translated(
                         x: -PurgeChuteMetrics.chuteSize.x / 2 - Self.margins.x / 2,
                         y: PurgeChuteMetrics.chuteSize.y / 2,
-                        z: mountThickness
+                        z: Self.mountThickness
                     )
                     .symmetry(over: .x)
             }
             .subtracting {
-                Cylinder(diameter: PurgeChuteMetrics.screwHeadDiameter, height: mountThickness)
-                    .translated(y: PurgeChuteMetrics.screwHoleDistance / 2, z: mountBaseThickness)
+                Cylinder(diameter: PurgeChuteMetrics.screwHeadDiameter, height: Self.mountThickness)
+                    .translated(y: PurgeChuteMetrics.screwHoleDistance / 2, z: Self.mountBaseThickness)
+                    .symmetry(over: .y)
+
+                Triangle.right(a: Self.mountThickness, b: Self.mountThickness)
+                    .extruded(height: PurgeChuteMetrics.chuteSize.x)
+                    .rotated(y: 90°)
+                    .aligned(at: .centerX, .minY, .minZ)
+                    .translated(y: PurgeChuteMetrics.chuteSize.y / 2)
                     .symmetry(over: .y)
 
                 Triangle.right(a: Self.latch.length, b: Self.latch.depth)
@@ -50,7 +58,7 @@ struct MountingBracket: Shape3D {
                     .translated(
                         x: PurgeChuteMetrics.chuteSize.x / 2 - tolerance,
                         y: PurgeChuteMetrics.chuteSize.y / 2 + Self.margins.y - Self.latch.inset + tolerance,
-                        z: mountThickness
+                        z: Self.mountThickness
                     )
                     .symmetry(over: .xy)
             }

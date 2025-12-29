@@ -23,8 +23,9 @@ struct HoseConnector: Shape3D {
 
         let hoseMountInnerDiameter = thread.minorDiameter - 2 * hoseMountWallThickness
         let hoseToChuteTransitionLength = 30.0
-        let chuteBottomZ = hoseMountLength + hoseToChuteTransitionLength - 0.2
-        let chuteTopZ = hoseMountLength + hoseToChuteTransitionLength + PurgeChuteMetrics.chuteSize.y
+        let bottomStraightLength = 4.0
+        let chuteBottomZ = hoseMountLength + hoseToChuteTransitionLength + bottomStraightLength - 0.2
+        let chuteTopZ = hoseMountLength + hoseToChuteTransitionLength + bottomStraightLength + PurgeChuteMetrics.chuteSize.y
         let topHeight = MountingBracket.margins.y
         let topZ = chuteTopZ + topHeight
 
@@ -62,7 +63,7 @@ struct HoseConnector: Shape3D {
                             .subtracting { Circle(diameter: hoseMountInnerDiameter) }
                             .translated(y: -hoseMountInnerDiameter / 2 - hoseOffsetFromBase - wallThickness)
                     }
-                    layer(z: chuteBottomZ, interpolation: .easeInOut) {
+                    layer(z: (chuteBottomZ - bottomStraightLength)..<chuteBottomZ, interpolation: .easeInOut) {
                         bodyOuterShape.subtracting { bodyInnerShape }
                     }
                 }
@@ -152,6 +153,15 @@ struct HoseConnector: Shape3D {
                     .translated(z: -hoseToChuteTransitionLength)
                     .translated(x: -PurgeChuteMetrics.chuteSize.x / 2 - 10 / 2, z: chuteBottomZ)
                     .symmetry(over: .x)
+
+                Triangle.right(a: wallThickness + 0.1, b: wallThickness + 0.1)
+                    .adding {
+                        Rectangle(x: MountingBracket.mountThickness + tolerance, y: wallThickness + 0.1).aligned(at: .maxX)
+                    }
+                    .extruded(height: PurgeChuteMetrics.chuteSize.x)
+                    .rotated(y: 90°)
+                    .aligned(at: .centerX, .maxY, .maxZ)
+                    .translated(z: chuteBottomZ)
             }
             .sliced(along: .y(-1)) { body, shape in
                 body.adding {
@@ -174,6 +184,7 @@ struct HoseConnector: Shape3D {
                     .rotated(x: 90°)
                     .aligned(at: .bottom)
                     .translated(y: 3.6, z: chuteBottomZ - MountingBracket.margins.y)
+                    .colored(.gray)
                     .inBackground()
             }
     }
