@@ -2,7 +2,7 @@ import Foundation
 import Cadova
 import Helical
 
-struct Grommet: Shape3D {
+struct Grommet: Geometry3D {
     var body: any Geometry3D {
         let hoseOuterDiameter = 48.1
         let hoseHelixDepth = 2.4
@@ -35,10 +35,10 @@ struct Grommet: Shape3D {
         let topPart = Circle(diameter: surfaceDiameter)
             .extruded(height: surfaceThickness, bottomEdge: .chamfer(depth: surfaceThickness))
             .adding {
-                Screw(thread: screwMountThread, length: screwLength, chamferFactor: 1)
+                Screw(thread: screwMountThread, length: screwLength, leadIns: .leading)
             }
             .subtracting {
-                ThreadedHole(thread: hoseOuterThread, depth: screwLength + 0.2, entryEnds: [.negative])
+                ThreadedHole(thread: hoseOuterThread, depth: screwLength + 0.2, leadIns: .leading)
                     .translated(z: -0.1)
             }
 
@@ -59,7 +59,7 @@ struct Grommet: Shape3D {
                 Cylinder(diameter: bottomScrewOuterDiameter, height: screwLength + bottomSurfaceThickness)
             }
             .subtracting {
-                ThreadedHole(thread: screwMountThread, depth: screwLength + bottomSurfaceThickness, entryEnds: [.negative, .positive])
+                ThreadedHole(thread: screwMountThread, depth: screwLength + bottomSurfaceThickness, leadIns: .both)
             }
 
         Stack(.x, spacing: 1.0) {

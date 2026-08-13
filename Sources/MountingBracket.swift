@@ -1,7 +1,7 @@
 import Foundation
 import Cadova
 
-struct MountingBracket: Shape3D {
+struct MountingBracket: Geometry3D {
     static let margins = Vector2D(10.0, PurgeChuteMetrics.screwHoleDistance - PurgeChuteMetrics.chuteSize.y)
     static let latch = (
         depth: 1.4,
@@ -64,7 +64,7 @@ struct MountingBracket: Shape3D {
             }
     }
 
-    struct Tab: Shape2D {
+    struct Tab: Geometry2D {
         private var shape: BezierPath2D {
             BezierPath(from: [-2.5, -0.5]) {
                 curve(controlX: -0.5, controlY: 0, controlX: -0.5, controlY: 0.50, endX: -2, endY: 0.9)

@@ -2,7 +2,7 @@ import Foundation
 import Cadova
 import Helical
 
-struct HoseConnector: Shape3D {
+struct HoseConnector: Geometry3D {
     var body: any Geometry3D {
         @Environment(\.tolerance) var tolerance
 
@@ -58,20 +58,20 @@ struct HoseConnector: Shape3D {
                         .aligned(at: .centerX, .maxY)
                         .translated(y: -wallThickness)
 
-                    layer(z: hoseMountLength) {
+                    Section(at: hoseMountLength) {
                         Circle(diameter: hoseInnerDiameter)
                             .subtracting { Circle(diameter: hoseMountInnerDiameter) }
                             .translated(y: -hoseMountInnerDiameter / 2 - hoseOffsetFromBase - wallThickness)
                     }
-                    layer(z: (chuteBottomZ - bottomStraightLength)..<chuteBottomZ, interpolation: .easeInOut) {
+                    Section(at: (chuteBottomZ - bottomStraightLength)..<chuteBottomZ, interpolation: .easeInOut) {
                         bodyOuterShape.subtracting { bodyInnerShape }
                     }
                 }
                 Loft {
-                    layer(z: chuteBottomZ..<chuteTopZ) {
+                    Section(at: chuteBottomZ..<chuteTopZ) {
                         bodyOuterShape
                     }
-                    layer(z: topZ, interpolation: .circularEaseIn) {
+                    Section(at: topZ, interpolation: .circularEaseIn) {
                         Rectangle(
                             x: bodyWidth - 2 * topHeight,
                             y: hoseMountInnerDiameter + hoseOffsetFromBase + 2 * wallThickness - topHeight
@@ -106,10 +106,10 @@ struct HoseConnector: Shape3D {
                         .aligned(at: .centerX, .maxY)
 
                     Loft {
-                        layer(z: chuteTopZ) {
+                        Section(at: chuteTopZ) {
                             bodyInnerShape
                         }
-                        layer(z: (chuteTopZ + 5)..<topZ, interpolation: .convexHull) {
+                        Section(at: (chuteTopZ + 5)..<topZ, interpolation: .convexHull) {
                             topCutoutShape
                         }
                     }
@@ -183,7 +183,7 @@ struct HoseConnector: Shape3D {
                 MountingBracket()
                     .rotated(x: 90°)
                     .aligned(at: .bottom)
-                    .translated(y: 3.6, z: chuteBottomZ - MountingBracket.margins.y)
+                    .translated(y: MountingBracket.mountThickness, z: chuteBottomZ - MountingBracket.margins.y)
                     .colored(.gray)
                     .inBackground()
             }
